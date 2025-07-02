@@ -24,9 +24,9 @@ def check_availability(driver) -> Tuple[bool | str, str | int]:
             By.CSS_SELECTOR, "span[data-flow-stock-count]"
         )
         if status.text.isdigit():
-            return int(status) > 0, status
+            return int(status.text) > 0, status.text
         else:
-            status, "Unkown"
+            status.text, "Unknown"
     except NoSuchElementException:
         return False, "Unknown"
 
@@ -88,4 +88,4 @@ def parse_drinks(url: str) -> Dict:
         return final_result
 
 
-print(parse_drinks("https://drinkstore.ie/collections/cocktails-mix/products/1770"))
+print(parse_drinks("https://drinkstore.ie/products/1521"))
