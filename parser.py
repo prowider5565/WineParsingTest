@@ -88,4 +88,4 @@ def parse_drinks(url: str) -> Dict:
         return final_result
 
 
-print(parse_drinks("https://drinkstore.ie/products/1521"))
+print(parse_drinks("https://drinkstore.ie/collections/gifts-accessories/products/1892"))
