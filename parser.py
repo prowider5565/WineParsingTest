@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -17,12 +17,18 @@ def fetch_image_urls(images: List[WebElement]) -> List[str]:
     return links
 
 
-def check_availability(element: WebElement) -> int:
+def check_availability(driver) -> Tuple[bool | str, str | int]:
     try:
-        status = element.find_element(By.CSS_SELECTOR, "span[data-flow-stock-count]")
-        return int(status.text) if status.text.isdigit() else status.text
+        is_available = driver.find_element(By.CLASS_NAME, "level-indicator-message")
+        status = is_available.find_element(
+            By.CSS_SELECTOR, "span[data-flow-stock-count]"
+        )
+        if status.text.isdigit():
+            return int(status) > 0, status
+        else:
+            status, "Unkown"
     except NoSuchElementException:
-        return 0
+        return False, "Unknown"
 
 
 def parse_money(driver: webdriver.Chrome) -> List[Dict[str, str]]:
@@ -70,21 +76,16 @@ def parse_money(driver: webdriver.Chrome) -> List[Dict[str, str]]:
 def parse_drinks(url: str) -> Dict:
     with webdriver.Chrome() as driver:
         driver.get(url)
-        is_available = driver.find_element(By.CLASS_NAME, "level-indicator-message")
         images = driver.find_elements(By.CSS_SELECTOR, "a[data-main-media-link]")
         extracted_images = fetch_image_urls(images)
-        availability = check_availability(is_available)
+        available, in_stock = check_availability(driver)
         final_result = {
             "images": extracted_images,
-            "isAvailable": availability > 0,
-            "inStock": availability,
+            "isAvailable": available,
+            "inStock": in_stock,
             "prices": parse_money(driver),
         }
         return final_result
 
 
-print(
-    parse_drinks(
-        "https://drinkstore.ie/collections/spirits-1/products/shankys-whip-700ml"
-    )
-)
+print(parse_drinks("https://drinkstore.ie/collections/cocktails-mix/products/1770"))
